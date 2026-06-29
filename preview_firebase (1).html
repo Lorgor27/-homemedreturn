@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบเก็บและคืนยาเดิมผู้ป่วย</title>
+  <style>
+    :root{
+      --bg:#fff7fb;
+      --card:#ffffffcc;
+      --ink:#354052;
+      --muted:#7a869a;
+      --line:#eadff0;
+      --pink:#ffd6e8;
+      --pink2:#f9a8d4;
+      --blue:#c7ddff;
+      --blue2:#93c5fd;
+      --mint:#c9f4df;
+      --mint2:#86efac;
+      --lav:#ddd6fe;
+      --peach:#fed7aa;
+      --danger:#fecaca;
+      --shadow:0 18px 45px rgba(97,76,115,.12);
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:"Noto Sans Thai","Segoe UI",Tahoma,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, #fde2f3 0 24%, transparent 36%),
+        radial-gradient(circle at top right, #dbeafe 0 22%, transparent 35%),
+        radial-gradient(circle at bottom left, #dcfce7 0 20%, transparent 34%),
+        var(--bg);
+    }
+
+    .wrap{
+      width:min(1160px, calc(100% - 28px));
+      margin:auto;
+      padding:28px 0 34px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,#ffe4ef,#dbeafe 52%,#dcfce7);
+      border:1px solid rgba(255,255,255,.72);
+      border-radius:32px;
+      padding:26px;
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size:clamp(1.45rem,3vw,2.35rem);
+      letter-spacing:-.02em;
+    }
+
+    .hero p{
+      margin:0;
+      color:#596579;
+      line-height:1.65;
+    }
+
+    .clock{
+      min-width:235px;
+      background:#ffffffa8;
+      border:1px solid #fff;
+      border-radius:22px;
+      padding:16px;
+      text-align:center;
+      box-shadow:0 10px 28px rgba(100,116,139,.10);
+    }
+
+    .clock strong{
+      display:block;
+      font-size:1.35rem;
+      color:#475569;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:390px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.75);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+      backdrop-filter:blur(12px);
+    }
+
+    h2{
+      margin:0 0 14px;
+      font-size:1.15rem;
+    }
+
+    label{
+      display:block;
+      margin:12px 0 6px;
+      font-weight:800;
+      color:#475569;
+    }
+
+    input,select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 13px;
+      font:inherit;
+      color:var(--ink);
+      background:#fff;
+      outline:none;
+      transition:.18s;
+    }
+
+    input:focus,select:focus{
+      border-color:#c4b5fd;
+      box-shadow:0 0 0 5px rgba(196,181,253,.22);
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.55;
+      margin-top:8px;
+    }
+
+    .btns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    button{
+      border:0;
+      border-radius:16px;
+      padding:11px 14px;
+      font:inherit;
+      font-weight:900;
+      cursor:pointer;
+      color:#334155;
+      transition:.12s ease;
+    }
+
+    button:hover{transform:translateY(-1px);filter:brightness(.99)}
+    button:active{transform:translateY(0)}
+
+    .collect{background:linear-gradient(135deg,var(--blue),#eef6ff)}
+    .return{background:linear-gradient(135deg,var(--mint),#f1fff7)}
+    .ghost{background:#f4f1f8}
+    .danger{background:#fee2e2;color:#991b1b}
+    .edit{background:#fef3c7}
+    .csv{background:#ede9fe;color:#5b21b6}
+
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .stat{
+      border-radius:22px;
+      padding:16px;
+      min-height:98px;
+      border:1px solid rgba(255,255,255,.8);
+      box-shadow:0 10px 24px rgba(100,116,139,.08);
+    }
+
+    .stat:nth-child(1){background:linear-gradient(135deg,#dbeafe,#f8fbff)}
+    .stat:nth-child(2){background:linear-gradient(135deg,#dcfce7,#fbfffd)}
+    .stat:nth-child(3){background:linear-gradient(135deg,#fee2e2,#fff7f7)}
+
+    .stat span{
+      color:#64748b;
+      font-size:.88rem;
+      font-weight:800;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:2rem;
+      line-height:1.15;
+      margin-top:7px;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1fr 180px auto auto;
+      gap:10px;
+      align-items:end;
+      margin-bottom:12px;
+    }
+
+    .tablebox{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:auto;
+    }
+
+    table{
+      width:100%;
+      min-width:860px;
+      border-collapse:collapse;
+    }
+
+    th,td{
+      text-align:left;
+      padding:12px 10px;
+      border-bottom:1px solid #f0e9f5;
+      vertical-align:top;
+      font-size:.94rem;
+    }
+
+    th{
+      background:#fbf7ff;
+      color:#526174;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    tr:last-child td{border-bottom:0}
+
+    .pill{
+      display:inline-flex;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:.82rem;
+      white-space:nowrap;
+    }
+
+    .pill.collect-pill{background:#dbeafe;color:#1d4ed8}
+    .pill.return-pill{background:#dcfce7;color:#15803d}
+    .pill.pending-pill{background:#fee2e2;color:#b91c1c}
+
+    .small{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.45;
+    }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .actions button{
+      padding:7px 10px;
+      font-size:.82rem;
+    }
+
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:32px 16px;
+    }
+
+    .note{
+      margin-top:12px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      border-radius:18px;
+      padding:12px;
+      color:#9a3412;
+      font-size:.9rem;
+      line-height:1.55;
+    }
+
+    @media(max-width:950px){
+      .grid{grid-template-columns:1fr}
+      .hero{flex-direction:column;align-items:stretch}
+      .clock{text-align:left}
+      .toolbar{grid-template-columns:1fr 1fr}
+    }
+
+    @media(max-width:620px){
+      .summary{grid-template-columns:1fr}
+      .toolbar,.btns{grid-template-columns:1fr}
+      .hero{padding:20px;border-radius:24px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <h1>ระบบเก็บยาเดิม และคืนยาเดิมของคนไข้</h1>
+        <p>บันทึก HN พร้อมผู้เก็บ-คืนยา โดยระบบประทับวันเวลา ณ ตอนบันทึกให้อัตโนมัติ และสรุปสถานะคงค้างแบบเห็นภาพรวมทันที</p>
+      </div>
+      <div class="clock">
+        <span class="small">วันเวลาปัจจุบัน</span>
+        <strong id="liveClock">-</strong>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2 id="formTitle">บันทึกรายการ</h2>
+
+        <form id="drugForm">
+          <input type="hidden" id="editId">
+
+          <label for="hn">เลข HN <span style="color:#dc2626">*</span></label>
+          <input id="hn" required placeholder="เช่น 1234567">
+
+          <label for="staff">ผู้เก็บ-คืนยา <span style="color:#dc2626">*</span></label>
+          <input id="staff" required placeholder="ชื่อเจ้าหน้าที่">
+
+          <label for="actionType">ประเภทการบันทึก</label>
+          <select id="actionType">
+            <option value="เก็บยาเดิม">เก็บยาเดิม</option>
+            <option value="คืนยาเดิม">คืนยาเดิม</option>
+          </select>
+
+          <div class="hint">
+            เมื่อกดบันทึก ระบบจะประทับวันเวลาให้อัตโนมัติจากเวลาของเครื่องนี้ และซิงค์ข้อมูลแบบ Real-time ผ่าน Firebase
+          </div>
+
+          <div class="btns">
+            <button type="submit" class="collect" id="saveBtn">บันทึก</button>
+            <button type="button" class="ghost" id="resetBtn">ล้างฟอร์ม</button>
+          </div>
+        </form>
+
+        <div class="note">
+          การสรุป “ยังมียาเดิมค้าง” นับจาก HN ที่มีการเก็บยาเดิมแล้ว แต่ยังไม่มีรายการคืนยาเดิมล่าสุดหลังจากนั้น
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>สรุปภาพรวม</h2>
+
+        <div class="summary">
+          <div class="stat">
+            <span>HN ที่มีการเก็บยาเดิม</span>
+            <strong id="collectedHN">0</strong>
+          </div>
+          <div class="stat">
+            <span>HN ที่เก็บและคืนยาเดิมแล้ว</span>
+            <strong id="completedHN">0</strong>
+          </div>
+          <div class="stat">
+            <span>HN ที่ยังมียาเดิมค้าง</span>
+            <strong id="pendingHN">0</strong>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div>
+            <label for="search">ค้นหา HN / ผู้เก็บ-คืนยา</label>
+            <input id="search" placeholder="พิมพ์เพื่อค้นหา">
+          </div>
+          <div>
+            <label for="statusFilter">กรองสถานะ</label>
+            <select id="statusFilter">
+              <option value="">ทั้งหมด</option>
+              <option value="ค้างยาเดิม">ค้างยาเดิม</option>
+              <option value="คืนแล้ว">คืนแล้ว</option>
+            </select>
+          </div>
+          <button type="button" class="csv" id="exportBtn">ส่งออก CSV</button>
+          <button type="button" class="danger" id="clearBtn">ลบทั้งหมด</button>
+        </div>
+
+        <div class="tablebox">
+          <table>
+            <thead>
+              <tr>
+                <th>HN</th>
+                <th>สถานะล่าสุด</th>
+                <th>วันเวลาเก็บยาเดิมล่าสุด</th>
+                <th>ผู้เก็บยา</th>
+                <th>วันเวลาคืนยาเดิมล่าสุด</th>
+                <th>ผู้คืนยา</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTable"></tbody>
+          </table>
+          <div class="empty" id="emptyState" hidden>ยังไม่มีข้อมูล หรือไม่พบข้อมูลตามที่ค้นหา</div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:18px">
+      <h2>ประวัติการบันทึกทั้งหมด</h2>
+      <div class="tablebox">
+        <table>
+          <thead>
+            <tr>
+              <th>วันเวลาประทับตรา</th>
+              <th>HN</th>
+              <th>ประเภท</th>
+              <th>ผู้เก็บ-คืนยา</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="logTable"></tbody>
+        </table>
+        <div class="empty" id="emptyLog" hidden>ยังไม่มีประวัติการบันทึก</div>
+      </div>
+    </section>
+  </div>
+
+
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_yu-465u_AnpoHOhyTbmpwFpyNGTc7_g",
+      authDomain: "homemedreturn.firebaseapp.com",
+      databaseURL: "https://homemedreturn-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "homemedreturn",
+      storageBucket: "homemedreturn.firebasestorage.app",
+      messagingSenderId: "91429491207",
+      appId: "1:91429491207:web:c6122b98237704c3f790a2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const recordsRef = ref(db, "records");
+
+    const $ = id => document.getElementById(id);
+    const form = $("drugForm");
+    const editId = $("editId");
+    const hn = $("hn");
+    const staff = $("staff");
+    const actionType = $("actionType");
+    const search = $("search");
+    const statusFilter = $("statusFilter");
+
+    let allRecords = [];
+
+    function nowStamp(){
+      return new Date().toISOString();
+    }
+
+    function thaiDateTime(iso){
+      if(!iso) return "-";
+      return new Date(iso).toLocaleString("th-TH", {
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit"
+      });
+    }
+
+    function escapeHTML(text=""){
+      return String(text)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function buildHNStatus(records){
+      const map = new Map();
+
+      records
+        .slice()
+        .sort((a,b)=> new Date(a.stamp) - new Date(b.stamp))
+        .forEach(r => {
+          const current = map.get(r.hn) || {
+            hn:r.hn,
+            collectStamp:"",
+            collectStaff:"",
+            returnStamp:"",
+            returnStaff:"",
+            lastAction:"",
+            lastStamp:""
+          };
+
+          if(r.actionType === "เก็บยาเดิม"){
+            current.collectStamp = r.stamp;
+            current.collectStaff = r.staff;
+          } else {
+            current.returnStamp = r.stamp;
+            current.returnStaff = r.staff;
+          }
+
+          current.lastAction = r.actionType;
+          current.lastStamp = r.stamp;
+          map.set(r.hn, current);
+        });
+
+      return [...map.values()].map(item => {
+        const collected = Boolean(item.collectStamp);
+        const returnedAfterCollected = item.returnStamp && item.collectStamp && new Date(item.returnStamp) >= new Date(item.collectStamp);
+        item.status = collected && returnedAfterCollected ? "คืนแล้ว" : "ค้างยาเดิม";
+        if(!collected && item.returnStamp) item.status = "คืนแล้ว";
+        return item;
+      }).sort((a,b)=> new Date(b.lastStamp) - new Date(a.lastStamp));
+    }
+
+    function renderClock(){
+      $("liveClock").textContent = new Date().toLocaleString("th-TH", {
+        weekday:"short", year:"numeric", month:"short", day:"numeric",
+        hour:"2-digit", minute:"2-digit", second:"2-digit"
+      });
+    }
+
+    function render(){
+      const records = allRecords;
+      const hnStatus = buildHNStatus(records);
+      const q = search.value.trim().toLowerCase();
+      const status = statusFilter.value;
+
+      const collectedHN = hnStatus.filter(x => x.collectStamp).length;
+      const completedHN = hnStatus.filter(x => x.status === "คืนแล้ว" && x.collectStamp).length;
+      const pendingHN = hnStatus.filter(x => x.status === "ค้างยาเดิม" && x.collectStamp).length;
+
+      $("collectedHN").textContent = collectedHN;
+      $("completedHN").textContent = completedHN;
+      $("pendingHN").textContent = pendingHN;
+
+      const filteredHN = hnStatus.filter(x => {
+        const text = [x.hn, x.collectStaff, x.returnStaff, x.status].join(" ").toLowerCase();
+        return (!q || text.includes(q)) && (!status || x.status === status);
+      });
+
+      $("summaryTable").innerHTML = "";
+      $("emptyState").hidden = filteredHN.length > 0;
+
+      filteredHN.forEach(x => {
+        const tr = document.createElement("tr");
+        const pillClass = x.status === "คืนแล้ว" ? "return-pill" : "pending-pill";
+        tr.innerHTML = `
+          <td><strong>${escapeHTML(x.hn)}</strong></td>
+          <td><span class="pill ${pillClass}">${escapeHTML(x.status)}</span></td>
+          <td>${thaiDateTime(x.collectStamp)}</td>
+          <td>${escapeHTML(x.collectStaff || "-")}</td>
+          <td>${thaiDateTime(x.returnStamp)}</td>
+          <td>${escapeHTML(x.returnStaff || "-")}</td>
+          <td>
+            <div class="actions">
+              <button class="collect" onclick="window._quickCollect('${escapeHTML(x.hn)}')">เก็บเพิ่ม</button>
+              <button class="return" onclick="window._quickReturn('${escapeHTML(x.hn)}')">คืนยา</button>
+            </div>
+          </td>
+        `;
+        $("summaryTable").appendChild(tr);
+      });
+
+      const sortedLog = records.slice().sort((a,b)=> new Date(b.stamp) - new Date(a.stamp));
+      $("logTable").innerHTML = "";
+      $("emptyLog").hidden = sortedLog.length > 0;
+
+      sortedLog.forEach(r => {
+        const tr = document.createElement("tr");
+        const pillClass = r.actionType === "คืนยาเดิม" ? "return-pill" : "collect-pill";
+        tr.innerHTML = `
+          <td>${thaiDateTime(r.stamp)}</td>
+          <td><strong>${escapeHTML(r.hn)}</strong></td>
+          <td><span class="pill ${pillClass}">${escapeHTML(r.actionType)}</span></td>
+          <td>${escapeHTML(r.staff)}</td>
+          <td>
+            <div class="actions">
+              <button class="edit" onclick="window._editRecord('${r.id}')">แก้ไข</button>
+              <button class="danger" onclick="window._deleteRecord('${r.id}')">ลบ</button>
+            </div>
+          </td>
+        `;
+        $("logTable").appendChild(tr);
+      });
+    }
+
+    // Listen to Firebase real-time updates
+    onValue(recordsRef, (snapshot) => {
+      allRecords = [];
+      if(snapshot.exists()){
+        snapshot.forEach(child => {
+          allRecords.push({ id: child.key, ...child.val() });
+        });
+      }
+      render();
+    });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+
+      if(!hn.value.trim() || !staff.value.trim()){
+        alert("กรุณากรอกเลข HN และผู้เก็บ-คืนยา");
+        return;
+      }
+
+      const id = editId.value;
+
+      if(id){
+        // Edit existing
+        const existing = allRecords.find(x => x.id === id);
+        await update(ref(db, `records/${id}`), {
+          hn: hn.value.trim(),
+          staff: staff.value.trim(),
+          actionType: actionType.value,
+          stamp: existing ? existing.stamp : nowStamp()
+        });
+      } else {
+        // New record
+        const newRef = push(recordsRef);
+        await set(newRef, {
+          stamp: nowStamp(),
+          hn: hn.value.trim(),
+          staff: staff.value.trim(),
+          actionType: actionType.value
+        });
+      }
+
+      resetForm();
+    });
+
+    function resetForm(){
+      form.reset();
+      editId.value = "";
+      $("formTitle").textContent = "บันทึกรายการ";
+      $("saveBtn").textContent = "บันทึก";
+      actionType.value = "เก็บยาเดิม";
+      hn.focus();
+    }
+
+    window._editRecord = function(id){
+      const r = allRecords.find(x => x.id === id);
+      if(!r) return;
+      editId.value = r.id;
+      hn.value = r.hn;
+      staff.value = r.staff;
+      actionType.value = r.actionType;
+      $("formTitle").textContent = "แก้ไขรายการ";
+      $("saveBtn").textContent = "บันทึกการแก้ไข";
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+
+    window._deleteRecord = async function(id){
+      if(!confirm("ยืนยันการลบรายการนี้?")) return;
+      await remove(ref(db, `records/${id}`));
+    };
+
+    window._quickCollect = function(selectedHN){
+      editId.value = "";
+      hn.value = selectedHN;
+      staff.focus();
+      actionType.value = "เก็บยาเดิม";
+      $("formTitle").textContent = "บันทึกเก็บยาเดิม";
+      $("saveBtn").textContent = "บันทึกเก็บยา";
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+
+    window._quickReturn = function(selectedHN){
+      editId.value = "";
+      hn.value = selectedHN;
+      staff.focus();
+      actionType.value = "คืนยาเดิม";
+      $("formTitle").textContent = "บันทึกคืนยาเดิม";
+      $("saveBtn").textContent = "บันทึกคืนยา";
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+
+    function exportCSV(){
+      const records = allRecords;
+      const hnStatus = buildHNStatus(records);
+      if(!records.length){
+        alert("ยังไม่มีข้อมูลสำหรับส่งออก");
+        return;
+      }
+
+      const summaryRows = [
+        ["สรุปตาม HN"],
+        ["HN","สถานะล่าสุด","วันเวลาเก็บยาเดิมล่าสุด","ผู้เก็บยา","วันเวลาคืนยาเดิมล่าสุด","ผู้คืนยา"],
+        ...hnStatus.map(x => [x.hn,x.status,thaiDateTime(x.collectStamp),x.collectStaff,thaiDateTime(x.returnStamp),x.returnStaff]),
+        [],
+        ["ประวัติการบันทึกทั้งหมด"],
+        ["วันเวลาประทับตรา","HN","ประเภท","ผู้เก็บ-คืนยา"],
+        ...records.sort((a,b)=> new Date(a.stamp)-new Date(b.stamp)).map(r => [thaiDateTime(r.stamp),r.hn,r.actionType,r.staff])
+      ];
+
+      const csv = summaryRows
+        .map(row => row.map(cell => `"${String(cell ?? "").replaceAll('"','""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "home-medication-collect-return.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    $("resetBtn").addEventListener("click", resetForm);
+    $("clearBtn").addEventListener("click", async () => {
+      if(confirm("ต้องการลบข้อมูลทั้งหมดใช่หรือไม่?")){
+        await remove(recordsRef);
+      }
+    });
+    $("exportBtn").addEventListener("click", exportCSV);
+    search.addEventListener("input", render);
+    statusFilter.addEventListener("change", render);
+
+    renderClock();
+    setInterval(renderClock, 1000);
+  </script>
+</body>
+</html>
